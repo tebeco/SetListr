@@ -3,6 +3,7 @@ using SetListr.Web.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 using SetListr.Web.Services.Settings;
 using SetListr.Web.Services.Versioning;
+using SetListr.Web.Services.DTO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,13 @@ builder.Services.AddHttpClient<WeatherApiClient>(client =>
         // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
         // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
         client.BaseAddress = new("https+http://apiservice");
+    });
+
+builder.Services.AddHttpClient<SetListApiClient>(client => 
+    {
+        // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
+            // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
+            client.BaseAddress = new("https+http://apiservice");
     });
 
 builder.Services.AddScoped<CacheStorageAccessor>();

@@ -1,0 +1,36 @@
+@page "/setLists"
+@inject NavigationManager NavManager
+@inject SetListApiClient SetListApiClient
+
+<FluentHeader>
+    Set Lists
+</FluentHeader>
+
+@if (Sets is null)
+{
+    <FluentProgressRing></FluentProgressRing>
+}
+else 
+{
+    <FluentDataGrid Items="@Sets">
+        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Duration)" Sortable="true" />
+    </FluentDataGrid>
+}
+
+@code 
+{
+    public IQueryable<SetList>? Sets { get; set; }
+    protected override async Task OnInitializedAsync() 
+    {
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        if (NavManager.TryGetValue<Guid>("bandId", out var bandId))
+        {
+            Sets = await SetListApiClient.GetSetListsAsync(bandId);
+        }
+        else 
+        {
+            Sets = await SetListApiClient.GetSetListsAsync(Guid.NewGuid());
+        }
+    } 
+} 
