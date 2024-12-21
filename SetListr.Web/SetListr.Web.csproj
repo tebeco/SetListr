@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    
     <ProjectReference Include="..\SetListr.ServiceDefaults\SetListr.ServiceDefaults.csproj" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.0-beta.1" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.0-beta.1" />

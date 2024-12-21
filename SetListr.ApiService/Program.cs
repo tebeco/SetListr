@@ -19,6 +19,18 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Configure Auth
+builder.Services.AddAuthentication()
+                .AddKeycloakJwtBearer(
+                    serviceName: "keycloak",
+                    realm: "api",
+                    options =>
+                    {
+                        options.Audience = "store.api";
+                    });
+
+builder.Services.AddAuthorizationBuilder();
+
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
 app.MapGet("/weatherforecast", () =>
@@ -33,7 +45,8 @@ app.MapGet("/weatherforecast", () =>
         .ToArray();
     return forecast;
 })
-.WithName("GetWeatherForecast");
+.WithName("GetWeatherForecast")
+.RequireAuthorization();
 
 app.MapDefaultEndpoints();
 

@@ -13,6 +13,9 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddHttpContextAccessor()
+                .AddTransient<AuthorizationHandler>();
+
 builder.Services.AddFluentUIComponents();
 
 builder.Services.AddOutputCache();
@@ -23,6 +26,21 @@ builder.Services.AddHttpClient<WeatherApiClient>(client =>
         // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
         client.BaseAddress = new("https+http://apiservice");
     });
+
+var oidcScheme = OpenIdConnectDefaults.AuthenticationScheme;
+
+builder.Services.AddAuthentication(oidcScheme)
+                .AddKeycloakOpenIdConnect("keycloak", realm: "WeatherShop", oidcScheme, options =>
+                {
+                    options.ClientId = "WeatherWeb";
+                    options.ResponseType = OpenIdConnectResponseType.Code;
+                    options.Scope.Add("weather:all");
+                    options.RequireHttpsMetadata = false;
+                    options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Name;
+                    options.SaveTokens = true;
+                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                })
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
 
 builder.Services.AddScoped<CacheStorageAccessor>();
 builder.Services.AddSingleton<IAppVersionService, AppVersionService>();
