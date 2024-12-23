@@ -1,8 +1,14 @@
 using SetListr.Web;
 using SetListr.Web.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using SetListr.Web.Services.Settings;
 using SetListr.Web.Services.Versioning;
+using SetListr.Web.Services.Auth;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,17 +36,19 @@ builder.Services.AddHttpClient<WeatherApiClient>(client =>
 var oidcScheme = OpenIdConnectDefaults.AuthenticationScheme;
 
 builder.Services.AddAuthentication(oidcScheme)
-                .AddKeycloakOpenIdConnect("keycloak", realm: "WeatherShop", oidcScheme, options =>
+                .AddKeycloakOpenIdConnect("keycloak", realm: "SetListr", oidcScheme, options =>
                 {
-                    options.ClientId = "WeatherWeb";
+                    options.ClientId = "SetListr";
                     options.ResponseType = OpenIdConnectResponseType.Code;
-                    options.Scope.Add("weather:all");
+                    options.Scope.Add("setlistr:all");
                     options.RequireHttpsMetadata = false;
                     options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Name;
                     options.SaveTokens = true;
                     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 })
                 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+
+builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<CacheStorageAccessor>();
 builder.Services.AddSingleton<IAppVersionService, AppVersionService>();
@@ -66,5 +74,19 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapDefaultEndpoints();
+MapLoginAndLogout(app);
 
 app.Run();
+
+static IEndpointConventionBuilder MapLoginAndLogout(IEndpointRouteBuilder endpoints)
+{
+    var group = endpoints.MapGroup("authentication");
+
+    group.MapGet("/login", () => TypedResults.Challenge(new AuthenticationProperties { RedirectUri = "/" }))
+        .AllowAnonymous();
+
+    group.MapPost("/logout", () => TypedResults.SignOut(new AuthenticationProperties { RedirectUri = "/" },
+        [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]));
+
+    return group;
+}

@@ -23,10 +23,10 @@ if (app.Environment.IsDevelopment())
 builder.Services.AddAuthentication()
                 .AddKeycloakJwtBearer(
                     serviceName: "keycloak",
-                    realm: "api",
+                    realm: "SetListr",
                     options =>
                     {
-                        options.Audience = "store.api";
+                        options.Audience = "setlistr.api";
                     });
 
 builder.Services.AddAuthorizationBuilder();
