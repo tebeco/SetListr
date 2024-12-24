@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Keycloak.AuthServices.Authentication;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,17 +38,27 @@ builder.Services.AddHttpClient<WeatherApiClient>(client =>
 var oidcScheme = OpenIdConnectDefaults.AuthenticationScheme;
 
 builder.Services.AddAuthentication(oidcScheme)
-                .AddKeycloakOpenIdConnect("keycloak", realm: "SetListr", oidcScheme, options =>
-                {
-                    options.ClientId = "SetListr";
-                    options.ResponseType = OpenIdConnectResponseType.Code;
-                    options.Scope.Add("setlistr:all");
-                    options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Name;
-                    options.SaveTokens = true;
-                    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                })
-                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
+                .AddKeycloakWebApp(
+                    builder.Configuration.GetSection(KeycloakAuthenticationOptions.Section),
+                    configureOpenIdConnectOptions: options =>
+                    {
+                        // we need this for front-channel sign-out
+                        options.SaveTokens = true;
+                        options.ResponseType = OpenIdConnectResponseType.Code;
+                        options.RequireHttpsMetadata = false;
+                        options.ClientId = builder.Configuration["Keycloak:ClientId"];
+                        options.ClientSecret = builder.Configuration["Keycloak:ClientSecret"];
+                        options.Events = new OpenIdConnectEvents
+                        {
+                            OnSignedOutCallbackRedirect = context =>
+                            {
+                                context.Response.Redirect("/Home/Public");
+                                context.HandleResponse();
+
+                                return Task.CompletedTask;
+                            }
+                        };
+                    });
 
 builder.Services.AddCascadingAuthenticationState();
 
