@@ -23,6 +23,18 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Configure Auth
+builder.Services.AddAuthentication()
+                .AddKeycloakJwtBearer(
+                    serviceName: "keycloak",
+                    realm: "SetListr",
+                    options =>
+                    {
+                        options.Audience = "setlistr.api";
+                    });
+
+builder.Services.AddAuthorizationBuilder();
+
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
 app.MapGet("/weatherforecast", () =>
@@ -37,7 +49,8 @@ app.MapGet("/weatherforecast", () =>
         .ToArray();
     return forecast;
 })
-.WithName("GetWeatherForecast");
+.WithName("GetWeatherForecast")
+.RequireAuthorization();
 
 // app.MapGet("/bands", () => [band]).WithName("GetBands");
 

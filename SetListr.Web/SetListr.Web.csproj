@@ -7,10 +7,15 @@
         <features>use-roslyn-tokenizer</features>
     </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\SetListr.ServiceDefaults\SetListr.ServiceDefaults.csproj" />
-        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.0-beta.1" />
-        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.0-beta.1" />
-    </ItemGroup>
+  <ItemGroup>    
+    <PackageReference Include="Aspire.Hosting.Keycloak" Version="9.0.0-preview.5.24551.3" />    
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.0" />    
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.0-beta.1" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.0-beta.1" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SetListr.ServiceDefaults\SetListr.ServiceDefaults.csproj" />
+  </ItemGroup>
 </Project>
