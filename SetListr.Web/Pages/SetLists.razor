@@ -13,8 +13,12 @@
 else 
 {
     <FluentDataGrid Items="@Sets">
+
         <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
         <PropertyColumn Property="@(p => p.Duration)" Sortable="true" />
+        <TemplateColumn Title="Songs" Sortable="true" Align="Align.Center" Width="20">
+            <span>@context.Songs.Length</span>
+        </TemplateColumn>
     </FluentDataGrid>
 }
 

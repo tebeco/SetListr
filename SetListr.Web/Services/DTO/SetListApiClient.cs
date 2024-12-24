@@ -53,7 +53,9 @@ public record Song(Guid Id, string Name, TimeSpan Duration)
 
 public record SetList(Guid Id, string Name, ImmutableArray<Song> Songs)
 {
-    public TimeSpan Duration => Songs.Select(s => s.Duration).Aggregate((t1, t2) => t1 + t2);
+    public TimeSpan Duration => Songs.Any() 
+        ? Songs.Select(s => s.Duration).Aggregate((t1, t2) => t1 + t2)
+        : TimeSpan.Zero;
 }
 
 public record Band(Guid Id, string Name, ImmutableArray<Song> Songs, ImmutableArray<SetList> SetLists)
