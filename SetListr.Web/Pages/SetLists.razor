@@ -1,4 +1,5 @@
-@page "/setLists"
+@page "/setlists"
+@attribute [Authorize]
 @inject NavigationManager NavManager
 @inject SetListApiClient SetListApiClient
 
@@ -37,4 +38,4 @@ else
             Sets = await SetListApiClient.GetSetListsAsync(Guid.NewGuid());
         }
     } 
-} 
+}
