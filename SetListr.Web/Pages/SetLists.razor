@@ -31,11 +31,11 @@ else
         var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
         if (NavManager.TryGetValue<Guid>("bandId", out var bandId))
         {
-            Sets = await SetListApiClient.GetSetListsAsync(bandId);
+            Sets = await SetListApiClient.GetSetListsAsync(bandId, CancellationToken.None);
         }
         else 
         {
-            Sets = await SetListApiClient.GetSetListsAsync(Guid.NewGuid());
+            Sets = await SetListApiClient.GetSetListsAsync(bandId: null, CancellationToken.None);
         }
     } 
 }

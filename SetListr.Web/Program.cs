@@ -28,20 +28,6 @@ builder.Services.AddHttpContextAccessor()
 builder.Services.AddFluentUIComponents();
 
 builder.Services.AddOutputCache();
-
-builder.Services.AddHttpClient<WeatherApiClient>(client =>
-    {
-        // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
-        // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
-        client.BaseAddress = new("https+http://apiservice");
-    });
-
-builder.Services.AddHttpClient<SetListApiClient>(client => 
-    {
-        // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
-            // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
-            client.BaseAddress = new("https+http://apiservice");
-    });
     
 var oidcScheme = OpenIdConnectDefaults.AuthenticationScheme;
 
@@ -53,7 +39,7 @@ builder.Services.AddAuthentication(oidcScheme)
                         // we need this for front-channel sign-out
                         options.SaveTokens = true;
                         options.ResponseType = OpenIdConnectResponseType.Code;
-                        options.RequireHttpsMetadata = false;
+                        options.RequireHttpsMetadata = true;
                         options.ClientId = builder.Configuration["Keycloak:ClientId"];
                         options.Events = new OpenIdConnectEvents
                         {
@@ -68,6 +54,14 @@ builder.Services.AddAuthentication(oidcScheme)
                     });
 
 builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddHttpClient<SetListApiClient>(client => 
+    {
+        // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
+        // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
+        client.BaseAddress = new("https+http://apiservice");
+    })
+    .AddHttpMessageHandler<AuthorizationHandler>();
 
 builder.Services.AddScoped<CacheStorageAccessor>();
 builder.Services.AddSingleton<IAppVersionService, AppVersionService>();

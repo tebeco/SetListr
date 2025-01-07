@@ -1,6 +1,4 @@
-using System.Collections.Immutable;
-
-using Microsoft.AspNetCore.Mvc;
+using SetListr.ApiService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,14 +11,17 @@ builder.Services.AddProblemDetails();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddSingleton<SetListManager>();
+
 // Configure Auth
 builder.Services.AddAuthentication()
                 .AddKeycloakJwtBearer(
                     serviceName: "keycloak",
-                    realm: "SetListr",
+                    realm: builder.Configuration["Keycloak:Realm"]!,
                     options =>
                     {
                         options.Audience = "setlistr.api";
+                        options.Authority = builder.Configuration["Keycloak:AuthServerUrl"];
                     });
 
 builder.Services.AddAuthorizationBuilder();
@@ -34,90 +35,54 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.RequireAuthorization();
-
 // app.MapGet("/bands", () => [band]).WithName("GetBands");
 
-var songs = GenerateSongs();
-var setLists = GenerateSetLists(songs);
-var band = new Band(Guid.NewGuid(), "A Cool Band Name", songs, setLists);
-app.MapGet("/songs", ([FromQuery(Name = "bandId")] Guid bandId) => {
-    return songs;
+var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("SetListr.ApiService");
+
+app.MapGet("/songs", async (HttpContext httpContext) =>
+{
+    var setListManager = httpContext.RequestServices.GetRequiredService<SetListManager>();
+    var bandId = httpContext.Request.Query["bandId"];
+
+    logger.LogInformation($"Getting songs for band {bandId}");
+
+    if (Guid.TryParse(bandId, out var id) &&
+        setListManager.GetSongsForBand(id) is { } songs)
+    {
+        return Results.Ok(songs);
+    }
+
+    return Results.BadRequest();
 })
 .WithName("GetSongsForBand");
 
-app.MapGet("/setLists", ([FromQuery(Name = "bandId")] Guid bandId) => {
-    return setLists;
+app.MapGet("/setLists", async (HttpContext httpContext) =>
+{
+    var setListManager = httpContext.RequestServices.GetRequiredService<SetListManager>();
+    var bandId = httpContext.Request.Query["bandId"];
+
+    logger.LogInformation($"Getting set lists for band {bandId}");
+
+    if (Guid.TryParse(bandId, out var id) &&
+        setListManager.GetSetListsForBand(id) is { } setListsForBand)
+    {
+        return Results.Ok(setListsForBand);
+    }
+
+    var user = httpContext.User;
+
+    logger.LogInformation($"Getting set lists for user :: {user.Identity?.Name}");
+
+    if (user.Identity is { IsAuthenticated: true, Name: not null }
+        && setListManager.GetSetListsForUser(user.Identity.Name) is { } setListsForUser)
+    {
+        return Results.Ok(setListsForUser);
+    }
+
+    return Results.Ok();;
 })
 .WithName("GetSetListsFromBand");
 
 app.MapDefaultEndpoints();
 
 app.Run();
-
-static ImmutableArray<Song> GenerateSongs(int amount = 20)
-{
-    var songs = new Song[amount];
-    for (var i = 0; i < amount; i++)
-    {
-        songs[i] = new Song(
-            Guid.NewGuid(), 
-            $"Song {i}", 
-            TimeSpan.FromSeconds(Random.Shared.Next(700)));
-    }
-
-    return songs.ToImmutableArray();
-}
-
-static ImmutableArray<SetList> GenerateSetLists(ImmutableArray<Song> songs, int amount = 5)
-{
-    var setLists = new SetList[amount];
-    for (var i = 0; i < amount; i++)
-    {
-        var a = Random.Shared.Next(songs.Length);
-        var b = Random.Shared.Next(songs.Length);
-        var start = Math.Min(a, b);
-        var end = Math.Max(a, b);
-
-        setLists[i] = new SetList(
-            Guid.NewGuid(),
-            $"Set List {i}",
-            songs[start..end].ToImmutableArray()
-        );
-    }
-
-    return setLists.ToImmutableArray();
-}
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
-
-public record Song(Guid Id, string Name, TimeSpan Duration)
-{
-}
-
-public record SetList(Guid Id, string Name, ImmutableArray<Song> Songs)
-{
-}
-
-public record Band(Guid Id, string Name, ImmutableArray<Song> Songs, ImmutableArray<SetList> SetLists)
-{
-}
