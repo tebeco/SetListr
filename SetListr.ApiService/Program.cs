@@ -17,11 +17,10 @@ builder.Services.AddSingleton<SetListManager>();
 builder.Services.AddAuthentication()
                 .AddKeycloakJwtBearer(
                     serviceName: "keycloak",
-                    realm: builder.Configuration["Keycloak:Realm"]!,
+                    realm: builder.Configuration["Keycloak:Realm"] ?? throw new InvalidOperationException("Missing Keycloak:Realm"),
                     options =>
                     {
-                        options.Audience = "setlistr.api";
-                        options.Authority = $"{builder.Configuration["Keycloak:AuthServerUrl"]}/realms/{builder.Configuration["Keycloak:Realm"]}";
+                        options.Audience = "account";
                         options.RequireHttpsMetadata = false;
                     });
 
@@ -82,7 +81,8 @@ app.MapGet("/setLists", async (HttpContext httpContext) =>
 
     return Results.Ok(setListManager.GetSetLists());
 })
-.WithName("GetSetListsFromBand");
+.WithName("GetSetListsFromBand")
+.RequireAuthorization();
 
 app.MapDefaultEndpoints();
 

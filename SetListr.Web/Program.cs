@@ -60,8 +60,8 @@ builder.Services.AddHttpClient<SetListApiClient>(client =>
         // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
         // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
         client.BaseAddress = new("https+http://apiservice");
-    });
-    // .AddHttpMessageHandler<AuthorizationHandler>();
+    })
+    .AddHttpMessageHandler<AuthorizationHandler>();
 
 builder.Services.AddScoped<CacheStorageAccessor>();
 builder.Services.AddSingleton<IAppVersionService, AppVersionService>();
