@@ -1,0 +1,35 @@
+﻿@page "/setlist/{id}"
+@using Microsoft.AspNetCore.Mvc
+@inject SetListApiClient SetListApiClient
+
+@if (SetList is null)
+{
+    <FluentProgressRing></FluentProgressRing>
+}
+else 
+{
+    <FluentHeader>
+        @SetList.Name
+        <FluentDivider />
+        @SetList.Duration
+    </FluentHeader>
+    <FluentDataGrid Items="@Songs">
+        <TemplateColumn Title="Name" Sortable="true" Align="Align.Start">
+            @context.Name
+        </TemplateColumn>
+        <PropertyColumn Property="@(p => p.Duration)" Sortable="true" />
+    </FluentDataGrid>
+}
+
+@code {
+    [FromQuery] Guid Id { get; set; }
+
+    SetList? SetList { get; set; }
+
+    IQueryable<Song>? Songs => SetList?.Songs.AsQueryable();
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetList = await SetListApiClient.GetSetListAsync(Id);
+    }
+}

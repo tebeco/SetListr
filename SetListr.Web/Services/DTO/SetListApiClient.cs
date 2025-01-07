@@ -6,6 +6,20 @@ namespace SetListr.Web.Services.DTO;
 public class SetListApiClient(HttpClient httpClient, ILoggerFactory loggerFactory)
 {
     private readonly ILogger<SetListApiClient> _logger = loggerFactory.CreateLogger<SetListApiClient>();
+
+    public async Task<SetList?> GetSetListAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await httpClient.GetFromJsonAsync<SetList>($"/setList/{id}", cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error getting set list {id}", id);
+            return null;
+        }
+    }
+
     public async Task<IQueryable<Song>?> GetSongsForBandAsync(Guid bandId, int maxItems = 10, CancellationToken cancellationToken = default)
     {
         List<Song>? songs = null;

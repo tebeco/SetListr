@@ -39,7 +39,7 @@ builder.Services.AddAuthentication(oidcScheme)
                         // we need this for front-channel sign-out
                         options.SaveTokens = true;
                         options.ResponseType = OpenIdConnectResponseType.Code;
-                        options.RequireHttpsMetadata = true;
+                        options.RequireHttpsMetadata = false;
                         options.ClientId = builder.Configuration["Keycloak:ClientId"];
                         options.Events = new OpenIdConnectEvents
                         {
@@ -60,8 +60,8 @@ builder.Services.AddHttpClient<SetListApiClient>(client =>
         // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
         // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
         client.BaseAddress = new("https+http://apiservice");
-    })
-    .AddHttpMessageHandler<AuthorizationHandler>();
+    });
+    // .AddHttpMessageHandler<AuthorizationHandler>();
 
 builder.Services.AddScoped<CacheStorageAccessor>();
 builder.Services.AddSingleton<IAppVersionService, AppVersionService>();

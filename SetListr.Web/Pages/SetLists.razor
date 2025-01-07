@@ -14,8 +14,9 @@
 else 
 {
     <FluentDataGrid Items="@Sets">
-
-        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <TemplateColumn Title="Name" Sortable="true" Align="Align.Start">
+            <a href="@($"setlist/{context.Id}")">@context.Name</a>
+        </TemplateColumn>
         <PropertyColumn Property="@(p => p.Duration)" Sortable="true" />
         <TemplateColumn Title="Songs" Sortable="true" Align="Align.Center" Width="20">
             <span>@context.Songs.Length</span>

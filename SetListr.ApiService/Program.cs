@@ -21,7 +21,8 @@ builder.Services.AddAuthentication()
                     options =>
                     {
                         options.Audience = "setlistr.api";
-                        options.Authority = builder.Configuration["Keycloak:AuthServerUrl"];
+                        options.Authority = $"{builder.Configuration["Keycloak:AuthServerUrl"]}/realms/{builder.Configuration["Keycloak:Realm"]}";
+                        options.RequireHttpsMetadata = false;
                     });
 
 builder.Services.AddAuthorizationBuilder();
@@ -79,7 +80,7 @@ app.MapGet("/setLists", async (HttpContext httpContext) =>
         return Results.Ok(setListsForUser);
     }
 
-    return Results.Ok();;
+    return Results.Ok(setListManager.GetSetLists());
 })
 .WithName("GetSetListsFromBand");
 
