@@ -20,7 +20,7 @@ builder.Services.AddAuthentication()
                     realm: builder.Configuration["Keycloak:Realm"] ?? throw new InvalidOperationException("Missing Keycloak:Realm"),
                     options =>
                     {
-                        options.Audience = "account";
+                        options.Audience = "setlistr.api";
                         options.RequireHttpsMetadata = false;
                     });
 
