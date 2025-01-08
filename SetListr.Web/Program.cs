@@ -41,6 +41,7 @@ builder.Services.AddAuthentication(oidcScheme)
                         options.ResponseType = OpenIdConnectResponseType.Code;
                         options.RequireHttpsMetadata = false;
                         options.ClientId = builder.Configuration["Keycloak:ClientId"];
+                        options.ClientSecret = builder.Configuration["Keycloak:ClientSecret"];
                         options.Events = new OpenIdConnectEvents
                         {
                             OnSignedOutCallbackRedirect = context =>

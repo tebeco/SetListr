@@ -1,6 +1,7 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var keycloak = builder.AddKeycloak("keycloak", 8080)
+                      .WithArgs("--verbose")
                       .WithRealmImport(@"../keycloak")
                       .WithDataVolume();
 
