@@ -17,10 +17,10 @@ builder.Services.AddSingleton<SetListManager>();
 builder.Services.AddAuthentication()
                 .AddKeycloakJwtBearer(
                     serviceName: "keycloak",
-                    realm: builder.Configuration["Keycloak:Realm"] ?? throw new InvalidOperationException("Missing Keycloak:Realm"),
+                    realm: "SetListr",
                     options =>
                     {
-                        options.Audience = builder.Configuration["Keycloak:ClientId"];
+                        options.Audience = "setlistr.api";
                         options.RequireHttpsMetadata = false;
                     });
 

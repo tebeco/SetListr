@@ -40,8 +40,10 @@ builder.Services.AddAuthentication(oidcScheme)
                         options.SaveTokens = true;
                         options.ResponseType = OpenIdConnectResponseType.Code;
                         options.RequireHttpsMetadata = false;
-                        options.ClientId = builder.Configuration["Keycloak:ClientId"];
-                        options.ClientSecret = builder.Configuration["Keycloak:ClientSecret"];
+                        options.ClientId = "setlistr-frontend";
+                        options.Scope.Add("setlistr:all");
+                        options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Name;
+                        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                         options.Events = new OpenIdConnectEvents
                         {
                             OnSignedOutCallbackRedirect = context =>
@@ -61,6 +63,7 @@ builder.Services.AddHttpClient<SetListApiClient>(client =>
         // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
         // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
         client.BaseAddress = new("https+http://apiservice");
+        client.Timeout = TimeSpan.FromSeconds(500);
     })
     .AddHttpMessageHandler<AuthorizationHandler>();
 
